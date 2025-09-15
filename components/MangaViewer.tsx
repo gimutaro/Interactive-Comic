@@ -14,7 +14,8 @@ const MangaViewer: React.FC = () => {
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [loadedImages, setLoadedImages] = useState<Map<string, HTMLImageElement>>(new Map());
   const [isAnimating, setIsAnimating] = useState(false);
-  const animationRef = useRef<number>();
+  // requestAnimationFrame の ID を保持（初期値を null に）
+  const animationRef = useRef<number | null>(null);
 
   const currentPage = mangaPages[currentPageIndex];
   const currentPanel = currentPage.panels[currentPanelIndex];
@@ -129,6 +130,15 @@ const MangaViewer: React.FC = () => {
     window.addEventListener('resize', drawCanvas);
     return () => window.removeEventListener('resize', drawCanvas);
   }, [drawCanvas]);
+
+  // アニメーションフレームのクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (animationRef.current != null) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
 
   const animateTransition = useCallback((
     startOffset: { x: number; y: number },
